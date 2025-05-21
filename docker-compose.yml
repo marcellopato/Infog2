@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   web:
     build: .
@@ -11,6 +9,8 @@ services:
       - DATABASE_URL=postgresql://postgres:postgres@db:5432/lu_estilo
       - SECRET_KEY=your-secret-key-here
       - ALGORITHM=HS256
+      - PYTHONPATH=/app
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
     depends_on:
       - db
 
