@@ -27,7 +27,7 @@ async def list_categories(
     limit: int = 100,
     db: Session = Depends(get_db)
 ):
-    return db.query(Category).filter(Category.is_active == True).offset(skip).limit(limit).all()
+    return db.query(Category).filter(Category.is_active == True).all()
 
 @router.get("/{category_id}", response_model=CategorySchema)
 async def get_category(category_id: int, db: Session = Depends(get_db)):

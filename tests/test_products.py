@@ -87,6 +87,15 @@ def test_update_product(client, admin_token, test_db, test_product):
     assert response.status_code == status.HTTP_200_OK
     assert response.json()["price"] == 199.99
 
+def test_update_product_invalid_data(client, admin_token, test_product):
+    response = client.patch(
+        f"/products/{test_product.id}",
+        headers={"Authorization": f"Bearer {admin_token}"},
+        json={"price": -10}
+    )
+    assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+    assert "greater than 0" in str(response.json()["detail"])
+
 def test_delete_product(client, admin_token, test_db, test_product):
     # Garantir que o produto está na sessão atual
     product_id = test_product.id
@@ -105,3 +114,11 @@ def test_delete_product(client, admin_token, test_db, test_product):
     # Confirmar que não aparece na listagem
     list_response = client.get("/products/")
     assert product_id not in [p["id"] for p in list_response.json()]
+
+def test_get_deleted_product(client, admin_token, test_db, test_product):
+    # Deletar produto
+    test_product.is_active = False
+    test_db.commit()
+    
+    response = client.get(f"/products/{test_product.id}")
+    assert response.status_code == status.HTTP_404_NOT_FOUND

@@ -227,3 +227,18 @@ def test_refresh_token_inactive_user(client, test_db):
     )
     assert response.status_code == 400
     assert response.json()["detail"] == "Usuário inativo"
+
+def test_refresh_token_no_auth(client):
+    response = client.post("/auth/refresh-token")
+    assert response.status_code == status.HTTP_401_UNAUTHORIZED
+
+def test_refresh_token_invalid_user(client):
+    # Criar token com usuário inexistente
+    from app.core.security import create_access_token
+    token = create_access_token({"sub": "nonexistent"})
+    
+    response = client.post(
+        "/auth/refresh-token",
+        headers={"Authorization": f"Bearer {token}"}
+    )
+    assert response.status_code == status.HTTP_401_UNAUTHORIZED

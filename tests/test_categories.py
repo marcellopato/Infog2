@@ -91,3 +91,20 @@ def test_delete_category(client, admin_token, test_db, test_category):
     # Verifica se categoria foi marcada como inativa
     updated_category = test_db.query(Category).filter(Category.id == category_id).first()
     assert not updated_category.is_active
+
+def test_get_inactive_category(client, test_db):
+    # Criar categoria inativa
+    category = Category(name="Inativa", description="Categoria inativa", is_active=False)
+    test_db.add(category)
+    test_db.commit()
+    
+    response = client.get(f"/categories/{category.id}")
+    assert response.status_code == status.HTTP_404_NOT_FOUND
+
+def test_update_nonexistent_category(client, admin_token):
+    response = client.patch(
+        "/categories/9999",
+        headers={"Authorization": f"Bearer {admin_token}"},
+        json={"name": "Nova"}
+    )
+    assert response.status_code == status.HTTP_404_NOT_FOUND
