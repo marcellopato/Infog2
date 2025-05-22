@@ -88,6 +88,15 @@ def test_list_orders(client, admin_token, test_db, test_products):
     assert response.status_code == status.HTTP_200_OK
     assert len(response.json()) > 0
 
+def test_list_orders_no_orders(client, admin_token):
+    response = client.get("/orders/", headers={"Authorization": f"Bearer {admin_token}"})
+    assert response.status_code == status.HTTP_200_OK
+    assert response.json() == []
+
+def test_get_order_not_found(client, admin_token):
+    response = client.get("/orders/999", headers={"Authorization": f"Bearer {admin_token}"})
+    assert response.status_code == status.HTTP_404_NOT_FOUND
+
 def test_cancel_order(client, admin_token, test_db, test_products):
     # Criar novo produto para o teste
     product = Product(
@@ -133,3 +142,10 @@ def test_cancel_non_pending_order(client, admin_token, test_db, test_products):
         headers={"Authorization": f"Bearer {admin_token}"}
     )
     assert response.status_code == status.HTTP_400_BAD_REQUEST
+
+def test_cancel_nonexistent_order(client, admin_token):
+    response = client.patch(
+        "/orders/999/cancel",
+        headers={"Authorization": f"Bearer {admin_token}"}
+    )
+    assert response.status_code == status.HTTP_404_NOT_FOUND
