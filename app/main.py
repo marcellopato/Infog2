@@ -23,10 +23,34 @@ app = FastAPI(
     * Controle de pedidos
     * Relatórios e métricas
     * Busca avançada
+    * Integração com WhatsApp Business API
     
-    ## Documentação
+    ## Integrações
     
-    Para mais detalhes, visite `/redoc` ou `/docs`.
+    ### WhatsApp Business
+    A API se integra com WhatsApp Business para:
+    * Envio automático de confirmação de pedidos
+    * Notificações de status do pedido
+    * Catálogo de produtos
+    * Atendimento ao cliente
+    
+    ## Requisitos Técnicos
+    
+    * Python 3.9+
+    * PostgreSQL 13+
+    * Docker e Docker Compose
+    
+    ## Como Usar
+    
+    1. Autentique-se usando `/auth/login`
+    2. Use o token JWT retornado nos headers das requisições
+    3. Explore os endpoints através desta documentação
+    
+    ## Suporte
+    
+    Para suporte técnico, contate:
+    * Email: suporte@luestilo.com.br
+    * WhatsApp: (XX) XXXXX-XXXX
     """,
     version="1.0.0",
     contact={
