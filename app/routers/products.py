@@ -32,7 +32,10 @@ async def list_products(skip: int = 0, limit: int = 100, db: Session = Depends(g
 
 @router.get("/{product_id}", response_model=ProductSchema)
 async def get_product(product_id: int, db: Session = Depends(get_db)):
-    product = db.query(Product).filter(Product.id == product_id, Product.is_active == True).first()
+    product = db.query(Product).filter(
+        Product.id == product_id,
+        Product.is_active == True
+    ).first()
     if not product:
         raise HTTPException(status_code=404, detail="Produto não encontrado")
     return product

@@ -21,7 +21,6 @@ async def create_order(
     db_order = Order(user_id=current_user.id)
     db.add(db_order)
     
-    # Adicionar itens
     total = 0
     for item in order.items:
         product = db.query(Product).filter(Product.id == item.product_id).first()
@@ -34,7 +33,6 @@ async def create_order(
         if product.stock < item.quantity:
             raise HTTPException(status_code=400, detail=f"Estoque insuficiente para {product.name}")
         
-        # Criar item do pedido
         order_item = OrderItem(
             product_id=product.id,
             quantity=item.quantity,
@@ -43,10 +41,11 @@ async def create_order(
         db_order.items.append(order_item)
         total += product.price * item.quantity
         
-        # Atualizar estoque
         product.stock -= item.quantity
+        db.add(product)
     
     db_order.total = total
+    db.add(db_order)
     db.commit()
     db.refresh(db_order)
     return db_order
@@ -93,8 +92,11 @@ async def cancel_order(
     # Restaurar estoque
     for item in order.items:
         product = db.query(Product).filter(Product.id == item.product_id).first()
-        product.stock += item.quantity
+        if product:  # Validação adicional
+            product.stock += item.quantity
+            db.add(product)
     
     order.status = OrderStatus.cancelled
+    db.add(order)
     db.commit()
     return {"message": "Pedido cancelado com sucesso"}
