@@ -6,6 +6,9 @@ from app.core.security import get_current_admin_user
 from app.models.user import User
 from app.models.product import Product
 from app.schemas.product import ProductCreate, ProductUpdate, Product as ProductSchema
+import logging
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter()
 
@@ -15,6 +18,7 @@ async def create_product(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_admin_user)
 ):
+    logger.info(f"Criando produto: {product.name}")
     db_product = Product(**product.dict())
     db.add(db_product)
     db.commit()
@@ -23,6 +27,7 @@ async def create_product(
 
 @router.get("/", response_model=List[ProductSchema])
 async def list_products(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+    logger.info(f"Listando produtos: skip={skip}, limit={limit}")
     return db.query(Product).filter(Product.is_active == True).offset(skip).limit(limit).all()
 
 @router.get("/{product_id}", response_model=ProductSchema)
