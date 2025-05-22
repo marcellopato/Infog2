@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, Response
 from sqlalchemy.orm import Session
 from typing import List
 from app.core.database import get_db
@@ -9,7 +9,7 @@ from app.schemas.product import ProductCreate, ProductUpdate, Product as Product
 
 router = APIRouter()
 
-@router.post("/", response_model=ProductSchema)
+@router.post("/", response_model=ProductSchema, status_code=status.HTTP_201_CREATED)
 async def create_product(
     product: ProductCreate,
     db: Session = Depends(get_db),
@@ -62,4 +62,4 @@ async def delete_product(
     
     product.is_active = False
     db.commit()
-    return None
+    return Response(status_code=status.HTTP_204_NO_CONTENT)

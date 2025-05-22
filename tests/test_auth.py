@@ -120,6 +120,37 @@ def test_login_wrong_password(client):
     assert response.status_code == 401
     assert response.json()["detail"] == "Usuário ou senha incorretos"
 
+def test_login_invalid_user(client):
+    response = client.post(
+        "/auth/login",
+        data={
+            "username": "nonexistent",
+            "password": "wrong"
+        }
+    )
+    assert response.status_code == 401
+
+def test_login_email_instead_username(client, test_db):
+    # Registrar usuário
+    client.post(
+        "/auth/register",
+        json={
+            "email": "test@email.com",
+            "username": "testuser",
+            "password": "test123"
+        }
+    )
+    
+    # Login com email
+    response = client.post(
+        "/auth/login",
+        data={
+            "username": "test@email.com",
+            "password": "test123"
+        }
+    )
+    assert response.status_code == 200
+
 def test_refresh_token(client):
     # Registrar e fazer login
     register_response = client.post(

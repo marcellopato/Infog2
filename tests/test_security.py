@@ -1,6 +1,6 @@
 import pytest
 from fastapi import HTTPException
-from app.core.security import get_current_user, get_current_active_user, get_current_admin_user
+from app.core.security import get_current_user, get_current_active_user, get_current_admin_user, get_password_hash, verify_password, create_access_token
 from app.models.user import User
 
 @pytest.mark.asyncio
@@ -103,3 +103,16 @@ async def test_get_current_admin_user_success(test_db):
     result = await get_current_admin_user(admin_user)
     assert result == admin_user
     assert result.is_admin == True
+
+def test_verify_password():
+    hashed = get_password_hash("testpass")
+    assert verify_password("testpass", hashed)
+    assert not verify_password("wrongpass", hashed)
+
+def test_create_access_token_with_expiry():
+    from datetime import timedelta
+    token = create_access_token(
+        {"sub": "test"},
+        expires_delta=timedelta(minutes=30)
+    )
+    assert token is not None
