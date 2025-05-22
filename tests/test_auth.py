@@ -151,6 +151,28 @@ def test_login_email_instead_username(client, test_db):
     )
     assert response.status_code == 200
 
+def test_login_with_email(client):
+    """Testa login usando email ao invés de username"""
+    # Registrar usuário
+    client.post(
+        "/auth/register",
+        json={
+            "email": "test@example.com",
+            "username": "testuser",
+            "password": "test123"
+        }
+    )
+    
+    response = client.post(
+        "/auth/login",
+        data={
+            "username": "test@example.com",
+            "password": "test123"
+        }
+    )
+    assert response.status_code == 200
+    assert "access_token" in response.json()
+
 def test_refresh_token(client):
     # Registrar e fazer login
     register_response = client.post(
