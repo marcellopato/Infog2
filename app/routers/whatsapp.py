@@ -1,10 +1,12 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from typing import List
+from pydantic import BaseModel, validator
+import re
 from app.core.database import get_db
 from app.core.security import get_current_admin_user
 from app.services.whatsapp import WhatsAppService
-from app.schemas.whatsapp import MessageCreate, Message, MessageResponse
+from app.schemas.whatsapp import Message, MessageResponse
 from app.models.whatsapp import WhatsAppMessage
 from app.models.order import Order, OrderStatus
 import logging
@@ -12,6 +14,17 @@ import logging
 logger = logging.getLogger(__name__)
 router = APIRouter()
 whatsapp = WhatsAppService()
+
+class MessageCreate(BaseModel):
+    phone: str
+    message: str
+    type: str = "text"
+
+    @validator('phone')
+    def validate_phone(cls, v):
+        if not re.match(r'^\d{10,11}$', v.replace('+', '')):
+            raise ValueError('Número de telefone inválido')
+        return v
 
 @router.get("/test-connection")
 async def test_connection():
@@ -80,7 +93,10 @@ async def notify_order(
     try:
         order = db.query(Order).filter(Order.id == order_id).first()
         if not order:
-            raise HTTPException(status_code=404, detail="Pedido não encontrado")
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Pedido não encontrado"
+            )
 
         # Formatar mensagem
         message = (
@@ -103,6 +119,57 @@ async def notify_order(
             content=message,
             status="sent",
             message_type="order_notification"
+        )
+        db.add(db_message)
+        db.commit()
+
+        return {
+            "status": "success",
+            "message": "Notificação enviada",
+            "data": result
+        }
+
+    except HTTPException as e:
+        raise e
+    except Exception as e:
+        db.rollback()
+        logger.error(f"Erro ao enviar notificação: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.post("/notify/status/{order_id}")
+async def notify_order_status(
+    order_id: int,
+    status_update: dict,
+    db: Session = Depends(get_db),
+    current_user = Depends(get_current_admin_user)
+):
+    """Envia notificação de atualização de status do pedido"""
+    try:
+        order = db.query(Order).filter(Order.id == order_id).first()
+        if not order:
+            raise HTTPException(status_code=404, detail="Pedido não encontrado")
+
+        # Formatar mensagem
+        message = (
+            f"📦 Atualização do Pedido #{order.id}\n"
+            f"Status anterior: {order.status.value}\n"
+            f"Novo status: {status_update['status']}\n\n"
+            "Qualquer dúvida estamos à disposição!"
+        )
+
+        # Enviar mensagem
+        result = await whatsapp.send_message(
+            phone="5511938037151",  # Seu número
+            message=message
+        )
+
+        # Registrar envio
+        db_message = WhatsAppMessage(
+            user_id=current_user.id,
+            phone="5511938037151",
+            content={"order_id": order.id, "message": message},
+            status="sent",
+            message_type="status_update"
         )
         db.add(db_message)
         db.commit()

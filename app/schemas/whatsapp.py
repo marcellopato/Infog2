@@ -1,11 +1,18 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, validator
 from typing import Optional, Dict, Any, Union
 from datetime import datetime
+import re
 
 class MessageCreate(BaseModel):
-    phone: str = Field(..., example="5511999999999")
-    message: str = Field(..., example="Mensagem de teste")
-    type: str = Field(default="text")
+    phone: str = Field(..., example="11999999999")
+    message: str
+    type: str = "text"
+
+    @validator('phone')
+    def validate_phone(cls, v):
+        if not re.match(r'^\d{10,11}$', v.replace('+', '')):
+            raise ValueError('Número de telefone inválido')  # Exatamente esta mensagem
+        return v
 
 class Message(BaseModel):
     id: int

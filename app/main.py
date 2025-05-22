@@ -104,7 +104,7 @@ async def startup_event():
 @app.get("/")
 async def root():
     logger.info("Acessando rota raiz")
-    return {"status": "online", "message": "Lu Estilo API está funcionando!"}
+    return {"message": "Lu Estilo API está funcionando!"}
 
 @app.get("/health")
 async def health_check():
