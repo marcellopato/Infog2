@@ -8,6 +8,7 @@ from app.models.order import Order, OrderStatus
 from app.models.order_item import OrderItem
 from app.models.product import Product
 from app.schemas.order import OrderCreate, Order as OrderSchema
+from app.services.whatsapp import WhatsAppService
 
 router = APIRouter()
 
@@ -48,6 +49,23 @@ async def create_order(
     db.add(db_order)
     db.commit()
     db.refresh(db_order)
+    
+    # Enviar confirmação por WhatsApp
+    try:
+        whatsapp = WhatsAppService()
+        message = {
+            "type": "text",
+            "message": f"""
+            Olá! Seu pedido #{db_order.id} foi recebido.
+            Total: R$ {db_order.total:.2f}
+            
+            Em breve você receberá mais informações.
+            """
+        }
+        await whatsapp.send_message(current_user.phone, message)
+    except Exception as e:
+        logger.error(f"Erro ao enviar WhatsApp: {str(e)}")
+    
     return db_order
 
 @router.get("/", response_model=List[OrderSchema])
