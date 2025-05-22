@@ -1,7 +1,7 @@
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from app.core.database import Base, engine
-from app.routers import auth, products, categories, orders, reports, search
+from app.routers import auth, products, categories, orders, reports, search, whatsapp
 import logging
 
 # Configurar logging
@@ -79,6 +79,7 @@ app.include_router(categories.router, prefix="/categories", tags=["categories"])
 app.include_router(orders.router, prefix="/orders", tags=["orders"])
 app.include_router(reports.router, prefix="/reports", tags=["reports"])
 app.include_router(search.router, prefix="/search", tags=["search"])
+app.include_router(whatsapp.router, prefix="/whatsapp", tags=["whatsapp"])
 
 # Rota de teste
 @app.get("/")
