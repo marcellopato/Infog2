@@ -24,10 +24,8 @@ Base = declarative_base()
 __all__ = ['Base', 'get_db', 'engine', 'SessionLocal']
 
 def get_db():
+    db = SessionLocal()
     try:
-        db = SessionLocal()
-        logger.info("DB: Conexão iniciada")
         yield db
     finally:
-        logger.info("DB: Encerrando conexão")
         db.close()

@@ -34,12 +34,10 @@ def test_db_context_manager():
 
 def test_db_exception_handling():
     """Testa o tratamento completo de exceções do banco"""
+    from sqlalchemy.exc import SQLAlchemyError
+    
     def mock_db():
-        db = SessionLocal()
-        db.close = lambda: None
-        db.rollback = lambda: None
         raise SQLAlchemyError("Erro simulado")
-        yield db
     
     with pytest.raises(SQLAlchemyError) as exc_info:
         next(mock_db())
