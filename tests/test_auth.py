@@ -76,6 +76,17 @@ def test_register_duplicate_username(client):
     assert response.status_code == 400
     assert response.json()["detail"] == "Username já está em uso"
 
+def test_register_invalid_email(client):
+    response = client.post(
+        "/auth/register",
+        json={
+            "email": "invalid-email",
+            "username": "testuser",
+            "password": "test123"
+        }
+    )
+    assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+
 def test_login_success(client):
     # Registrar usuário
     client.post(
@@ -173,6 +184,10 @@ def test_login_with_email(client):
     assert response.status_code == 200
     assert "access_token" in response.json()
 
+def test_login_missing_credentials(client):
+    response = client.post("/auth/login", data={})
+    assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+
 def test_refresh_token(client):
     # Registrar e fazer login
     register_response = client.post(
@@ -202,6 +217,13 @@ def test_refresh_token_invalid(client):
     )
     assert response.status_code == 401
     assert response.json()["detail"] == "Não foi possível validar as credenciais"
+
+def test_refresh_token_expired(client):
+    response = client.post(
+        "/auth/refresh-token",
+        headers={"Authorization": "Bearer expired.token.here"}
+    )
+    assert response.status_code == status.HTTP_401_UNAUTHORIZED
 
 def test_refresh_token_inactive_user(client, test_db):
     # Registrar usuário
