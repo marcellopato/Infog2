@@ -127,3 +127,19 @@ def test_update_category_not_found(client, admin_token):
         json={"name": "Nova"}
     )
     assert response.status_code == status.HTTP_404_NOT_FOUND
+
+def test_create_category_invalid_data(client, admin_token):
+    response = client.post(
+        "/categories/",
+        headers={"Authorization": f"Bearer {admin_token}"},
+        json={"name": ""}
+    )
+    assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+
+def test_update_category_no_changes(client, admin_token, test_category):
+    response = client.patch(
+        f"/categories/{test_category.id}",
+        headers={"Authorization": f"Bearer {admin_token}"},
+        json={}
+    )
+    assert response.status_code == status.HTTP_200_OK

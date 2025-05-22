@@ -122,3 +122,18 @@ def test_get_deleted_product(client, admin_token, test_db, test_product):
     
     response = client.get(f"/products/{test_product.id}")
     assert response.status_code == status.HTTP_404_NOT_FOUND
+
+def test_update_product_not_found(client, admin_token):
+    response = client.patch(
+        "/products/999",
+        headers={"Authorization": f"Bearer {admin_token}"},
+        json={"name": "Novo Nome"}
+    )
+    assert response.status_code == status.HTTP_404_NOT_FOUND
+
+def test_delete_product_not_found(client, admin_token):
+    response = client.delete(
+        "/products/999",
+        headers={"Authorization": f"Bearer {admin_token}"}
+    )
+    assert response.status_code == status.HTTP_404_NOT_FOUND
