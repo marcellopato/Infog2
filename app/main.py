@@ -1,4 +1,4 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from app.core.database import Base, engine
 from app.routers import auth, products, categories, orders, reports, search
@@ -13,8 +13,30 @@ Base.metadata.create_all(bind=engine)
 
 app = FastAPI(
     title="Lu Estilo API",
-    description="API para gerenciamento de vendas da Lu Estilo",
-    version="1.0.0"
+    description="""
+    API para gerenciamento de vendas da Lu Estilo.
+    
+    ## Funcionalidades
+    
+    * Autenticação de usuários
+    * Gerenciamento de produtos e categorias
+    * Controle de pedidos
+    * Relatórios e métricas
+    * Busca avançada
+    
+    ## Documentação
+    
+    Para mais detalhes, visite `/redoc` ou `/docs`.
+    """,
+    version="1.0.0",
+    contact={
+        "name": "Suporte Lu Estilo",
+        "email": "suporte@luestilo.com.br"
+    },
+    license_info={
+        "name": "MIT",
+        "url": "https://opensource.org/licenses/MIT"
+    }
 )
 
 # Configurar CORS

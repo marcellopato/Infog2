@@ -3,20 +3,20 @@ from typing import Optional
 from datetime import datetime
 
 class ProductBase(BaseModel):
-    name: str = Field(..., min_length=3)
-    description: Optional[str] = None
-    price: float = Field(..., gt=0)
-    stock: int = Field(..., ge=0)
+    name: str = Field(..., min_length=3, example="Camisa Polo", description="Nome do produto")
+    description: Optional[str] = Field(None, example="Camisa polo em algodão", description="Descrição detalhada do produto")
+    price: float = Field(..., gt=0, example=89.90, description="Preço em reais")
+    stock: int = Field(..., ge=0, example=10, description="Quantidade em estoque")
     is_active: bool = True
 
 class ProductCreate(ProductBase):
     category_id: Optional[int] = None
 
 class ProductUpdate(BaseModel):
-    name: Optional[str] = None
-    description: Optional[str] = None
-    price: Optional[float] = Field(None, gt=0)
-    stock: Optional[int] = Field(None, ge=0)
+    name: Optional[str] = Field(None, example="Camisa Polo", description="Nome do produto")
+    description: Optional[str] = Field(None, example="Camisa polo em algodão", description="Descrição detalhada do produto")
+    price: Optional[float] = Field(None, gt=0, example=89.90, description="Preço em reais")
+    stock: Optional[int] = Field(None, ge=0, example=10, description="Quantidade em estoque")
     is_active: Optional[bool] = None
 
 class Product(ProductBase):
