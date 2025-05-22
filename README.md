@@ -1,116 +1,144 @@
 # Lu Estilo API
 
-API RESTful para gerenciamento de vendas da Lu Estilo, desenvolvida com FastAPI.
+API de gerenciamento de vendas para a loja Lu Estilo, desenvolvida com FastAPI e PostgreSQL.
 
-## 🚀 Funcionalidades
-
-- Autenticação e autorização com JWT
-- Gerenciamento de clientes
-- Catálogo de produtos
-- Sistema de pedidos
-- Integração com WhatsApp
-- Documentação automática (Swagger)
-
-## 🔧 Tecnologias
+## 🚀 Tecnologias
 
 - Python 3.9+
 - FastAPI
-- PostgreSQL
-- Docker
-- Pytest
-- Alembic (Migrações)
-- Sentry (Monitoramento)
+- PostgreSQL 13
+- Docker & Docker Compose
+- WhatsApp Business API
 
 ## 📋 Pré-requisitos
 
-- Docker e Docker Compose
-- Python 3.9+ (para desenvolvimento local)
+- Docker Desktop (Windows/Mac) ou Docker Engine + Compose (Linux)
 - Git
+- Editor de código (VS Code recomendado)
 
-## ⚙️ Instalação e Execução
+## 🔧 Instalação
 
 1. Clone o repositório:
 ```bash
-git clone https://github.com/marcellopato/Infog2
+git clone https://github.com/marcellopato/Infog2.git
 cd Infog2
 ```
 
 2. Configure as variáveis de ambiente:
 ```bash
 cp .env.example .env
-# Edite o arquivo .env com suas configurações
 ```
 
-3. Execute com Docker:
+3. Inicie os containers:
 ```bash
-docker-compose up --build
+docker-compose up -d
 ```
 
-4. Acesse:
-- API: http://localhost:8000
-- Documentação: http://localhost:8000/docs
-- ReDoc: http://localhost:8000/redoc
+4. Execute as migrações:
+```bash
+docker-compose exec web alembic upgrade head
+```
 
-## 🔍 Estrutura do Projeto
+5. Crie um usuário admin:
+```bash
+docker-compose exec web python scripts/create_admin.py
+```
+
+## 📦 Estrutura do Projeto
 
 ```
 lu-estilo-api/
 ├── app/
-│   ├── core/           # Configurações principais
-│   ├── models/         # Modelos SQLAlchemy
-│   ├── schemas/        # Schemas Pydantic
-│   ├── routers/        # Endpoints da API
-│   ├── services/       # Lógica de negócios
-│   └── utils/          # Utilitários
-├── tests/              # Testes
-├── alembic/            # Migrações
-├── docker/             # Configurações Docker
-└── docs/              # Documentação adicional
+│   ├── core/         # Configurações e funcionalidades core
+│   ├── models/       # Modelos SQLAlchemy
+│   ├── routers/      # Rotas da API
+│   ├── schemas/      # Schemas Pydantic
+│   └── services/     # Serviços (WhatsApp, etc)
+├── tests/            # Testes unitários
+├── alembic/          # Migrações do banco
+└── docker/           # Arquivos Docker
+```
+
+## 🔑 Autenticação
+
+A API usa autenticação JWT. Para obter um token:
+
+```bash
+curl -X POST "http://localhost:8000/auth/login" \
+     -H "Content-Type: application/x-www-form-urlencoded" \
+     -d "username=admin&password=sua-senha"
+```
+
+## 📱 Integração WhatsApp
+
+Para usar a integração com WhatsApp:
+
+1. Crie uma conta no Meta Business
+2. Configure o WhatsApp Business API
+3. Atualize as variáveis no .env:
+```
+WHATSAPP_API_URL=
+WHATSAPP_TOKEN=
+WHATSAPP_PHONE_ID=
 ```
 
 ## 🧪 Testes
 
-Execute os testes usando:
+Execute os testes com:
 
 ```bash
-docker-compose exec web pytest
+docker-compose exec web pytest -v
 ```
 
-## 📚 Documentação da API
+Para ver a cobertura:
 
-A documentação completa está disponível em:
+```bash
+docker-compose exec web pytest --cov
+```
+
+## 📚 Documentação
 
 - Swagger UI: http://localhost:8000/docs
 - ReDoc: http://localhost:8000/redoc
 
-## 🔐 Autenticação
+## 🛠️ Desenvolvimento
 
-A API utiliza JWT (JSON Web Token) para autenticação. Para acessar endpoints protegidos:
+Para desenvolvimento local:
 
-1. Faça login em `/auth/login`
-2. Use o token retornado no header `Authorization: Bearer {token}`
+1. Instale as dependências:
+```bash
+pip install -r requirements.txt
+```
 
-## 👥 Níveis de Acesso
+2. Configure pre-commit:
+```bash
+pre-commit install
+```
 
-- **Admin**: Acesso total ao sistema
-- **Usuário**: Acesso limitado a operações básicas
-
-## 📦 Deploy
-
-O projeto está configurado para deploy usando Docker. Consulte `docker-compose.yml` para mais detalhes.
-
-## 🤝 Contribuição
-
-1. Fork o projeto
-2. Crie sua Feature Branch (`git checkout -b feature/AmazingFeature`)
-3. Commit suas mudanças (`git commit -m 'Add some AmazingFeature'`)
-4. Push para a Branch (`git push origin feature/AmazingFeature`)
-5. Abra um Pull Request
+3. Rode os testes antes de cada commit:
+```bash
+pytest
+```
 
 ## 📄 Licença
 
 Este projeto está sob a licença MIT. Veja o arquivo [LICENSE](LICENSE) para mais detalhes.
 
-## 📞 Suporte
+## ✨ Funcionalidades
 
-Para suporte, envie um email para suporte@luestilo.com.br
+- Gestão de produtos e categorias
+- Controle de pedidos
+- Sistema de busca avançado
+- Relatórios e métricas
+- Integração com WhatsApp
+- Autenticação e autorização
+- Documentação completa
+- Testes automatizados (95%+ cobertura)
+
+## 🤝 Contribuindo
+
+1. Faça um fork do projeto
+2. Crie uma branch para sua feature (`git checkout -b feature/AmazingFeature`)
+3. Commit suas mudanças (`git commit -m 'Add some AmazingFeature'`)
+4. Push para a branch (`git push origin feature/AmazingFeature`)
+5. Abra um Pull Request
