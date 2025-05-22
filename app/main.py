@@ -4,8 +4,11 @@ from app.core.database import Base, engine
 from app.routers import auth, products, categories, orders, reports, search, whatsapp
 import logging
 
-# Configurar logging
-logging.basicConfig(level=logging.INFO)
+# Configurar logging mais detalhado
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+)
 logger = logging.getLogger(__name__)
 
 # Criar tabelas
@@ -81,11 +84,27 @@ app.include_router(reports.router, prefix="/reports", tags=["reports"])
 app.include_router(search.router, prefix="/search", tags=["search"])
 app.include_router(whatsapp.router, prefix="/whatsapp", tags=["whatsapp"])
 
+# Adicionar log para debug
+logger.info("Rotas registradas:")
+for route in app.routes:
+    logger.info(f"- {route.path}")
+
+@app.on_event("startup")
+async def startup_event():
+    logger.info("Iniciando aplicação...")
+    try:
+        # Testar conexão com banco
+        Base.metadata.create_all(bind=engine)
+        logger.info("Conexão com banco estabelecida")
+    except Exception as e:
+        logger.error(f"Erro ao iniciar: {str(e)}")
+        raise e
+
 # Rota de teste
 @app.get("/")
 async def root():
     logger.info("Acessando rota raiz")
-    return {"message": "Lu Estilo API está funcionando!"}
+    return {"status": "online", "message": "Lu Estilo API está funcionando!"}
 
 @app.get("/health")
 async def health_check():

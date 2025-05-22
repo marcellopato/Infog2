@@ -4,6 +4,7 @@ services:
       context: .
       dockerfile: Dockerfile
     image: infog2-web:latest
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload --log-level debug
     ports:
       - "8000:8000"
     volumes:
@@ -13,9 +14,9 @@ services:
       - SECRET_KEY=your-secret-key-here
       - ALGORITHM=HS256
       - PYTHONPATH=/app
+      - PYTHONUNBUFFERED=1
     depends_on:
-      db:
-        condition: service_healthy
+      - db
     restart: unless-stopped
 
   db:
