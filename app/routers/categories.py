@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, status, Response
 from sqlalchemy.orm import Session
+from sqlalchemy.exc import IntegrityError
 from typing import List
 from app.core.database import get_db
 from app.core.security import get_current_admin_user
@@ -15,11 +16,18 @@ async def create_category(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_admin_user)
 ):
-    db_category = Category(**category.dict())
-    db.add(db_category)
-    db.commit()
-    db.refresh(db_category)
-    return db_category
+    try:
+        db_category = Category(**category.dict())
+        db.add(db_category)
+        db.commit()
+        db.refresh(db_category)
+        return db_category
+    except IntegrityError:
+        db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Nome de categoria já existe"
+        )
 
 @router.get("/", response_model=List[CategorySchema])
 async def list_categories(

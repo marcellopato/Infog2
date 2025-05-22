@@ -54,6 +54,12 @@ async def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = 
             headers={"WWW-Authenticate": "Bearer"},
         )
     
+    if not user.is_active:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Usuário inativo"
+        )
+    
     logger.info(f"Login bem sucedido para usuário: {user.username}")
     
     access_token = create_access_token(
