@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.core.database import Base, engine
-from app.routers import auth, products
+from app.routers import auth, products, categories
 import logging
 
 # Configurar logging
@@ -29,6 +29,7 @@ app.add_middleware(
 # Registrar rotas
 app.include_router(auth.router, prefix="/auth", tags=["auth"])
 app.include_router(products.router, prefix="/products", tags=["products"])
+app.include_router(categories.router, prefix="/categories", tags=["categories"])
 
 # Rota de teste
 @app.get("/")
