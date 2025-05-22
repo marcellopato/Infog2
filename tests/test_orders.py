@@ -65,6 +65,18 @@ def test_create_order_invalid_product(client, admin_token):
     )
     assert response.status_code == status.HTTP_404_NOT_FOUND
 
+def test_create_order_invalid_product(client, admin_token):
+    response = client.post(
+        "/orders/",
+        headers={"Authorization": f"Bearer {admin_token}"},
+        json={
+            "items": [
+                {"product_id": 999, "quantity": 1}
+            ]
+        }
+    )
+    assert response.status_code == status.HTTP_404_NOT_FOUND
+
 def test_create_order_insufficient_stock(client, admin_token, test_products):
     response = client.post(
         "/orders/",
@@ -134,6 +146,21 @@ def test_cancel_order(client, admin_token, test_db, test_products):
 def test_cancel_non_pending_order(client, admin_token, test_db, test_products):
     # Criar pedido já pago
     order = Order(user_id=1, total=100, status=OrderStatus.paid)
+    test_db.add(order)
+    test_db.commit()
+
+    response = client.patch(
+        f"/orders/{order.id}/cancel",
+        headers={"Authorization": f"Bearer {admin_token}"}
+    )
+    assert response.status_code == status.HTTP_400_BAD_REQUEST
+
+def test_cancel_order_already_delivered(client, admin_token, test_db):
+    order = Order(
+        user_id=1,
+        total=100.00,
+        status=OrderStatus.delivered
+    )
     test_db.add(order)
     test_db.commit()
 
