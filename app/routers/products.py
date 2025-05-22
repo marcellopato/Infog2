@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, status, Response
+from fastapi import APIRouter, Depends, HTTPException, status, Response, Query
 from sqlalchemy.orm import Session
 from typing import List
 from app.core.database import get_db
@@ -18,6 +18,17 @@ async def create_product(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_admin_user)
 ):
+    """
+    Criar um novo produto.
+
+    - **name**: Nome do produto
+    - **description**: Descrição do produto (opcional)
+    - **price**: Preço em reais
+    - **stock**: Quantidade em estoque
+    - **category_id**: ID da categoria (opcional)
+
+    Requer autenticação de administrador.
+    """
     logger.info(f"Criando produto: {product.name}")
     db_product = Product(**product.dict())
     db.add(db_product)
@@ -26,7 +37,18 @@ async def create_product(
     return db_product
 
 @router.get("/", response_model=List[ProductSchema])
-async def list_products(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+async def list_products(
+    skip: int = Query(0, description="Número de itens para pular"),
+    limit: int = Query(100, description="Limite de itens por página"),
+    db: Session = Depends(get_db)
+):
+    """
+    Listar produtos ativos.
+
+    Parâmetros de paginação:
+    - **skip**: Número de itens para pular
+    - **limit**: Limite de itens por página
+    """
     logger.info(f"Listando produtos: skip={skip}, limit={limit}")
     return db.query(Product).filter(Product.is_active == True).offset(skip).limit(limit).all()
 
