@@ -12,10 +12,12 @@ class ProductBase(BaseModel):
 class ProductCreate(ProductBase):
     category_id: Optional[int] = None
 
-class ProductUpdate(ProductBase):
+class ProductUpdate(BaseModel):
     name: Optional[str] = None
-    price: Optional[float] = None
-    stock: Optional[int] = None
+    description: Optional[str] = None
+    price: Optional[float] = Field(None, gt=0)
+    stock: Optional[int] = Field(None, ge=0)
+    is_active: Optional[bool] = None
 
 class Product(ProductBase):
     id: int
