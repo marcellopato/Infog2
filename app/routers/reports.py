@@ -64,6 +64,27 @@ async def generate_report(
                 for name, total_sold, total_revenue in results
             ]
 
+        if report.type == "sales":
+            query = db.query(
+                func.coalesce(func.sum(Order.total), 0).label("total_sales"),
+                func.count(Order.id).label("total_orders")
+            ).filter(
+                Order.created_at >= report.start_date,
+                Order.status == OrderStatus.paid
+            )
+            if report.end_date:
+                query = query.filter(Order.created_at <= report.end_date)
+            
+            result = query.first()
+            data = {
+                "total_sales": float(result.total_sales),
+                "total_orders": result.total_orders,
+                "period": {
+                    "start": report.start_date.isoformat(),
+                    "end": (report.end_date or datetime.now()).isoformat()
+                }
+            }
+
         db_report = Report(
             type=report.type,
             period=report.period,

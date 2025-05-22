@@ -242,3 +242,25 @@ def test_refresh_token_invalid_user(client):
         headers={"Authorization": f"Bearer {token}"}
     )
     assert response.status_code == status.HTTP_401_UNAUTHORIZED
+
+def test_login_inactive_user(client, test_db):
+    from app.core.security import get_password_hash
+    # Criar usuário inativo com senha hasheada corretamente
+    user = User(
+        email="inactive@test.com",
+        username="inactive",
+        hashed_password=get_password_hash("test123"),
+        is_active=False
+    )
+    test_db.add(user)
+    test_db.commit()
+    
+    response = client.post(
+        "/auth/login",
+        data={
+            "username": "inactive",
+            "password": "test123"
+        }
+    )
+    assert response.status_code == status.HTTP_400_BAD_REQUEST
+    assert response.json()["detail"] == "Usuário inativo"

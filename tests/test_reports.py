@@ -6,37 +6,55 @@ from app.models.order_item import OrderItem
 from app.models.product import Product
 
 @pytest.fixture
+def admin_token(client):
+    # Criar usuário admin
+    response = client.post(
+        "/auth/register",
+        json={
+            "email": "admin@test.com",
+            "username": "admin_test",
+            "password": "admin123",
+            "is_admin": True
+        }
+    )
+    return response.json()["access_token"]
+
+@pytest.fixture
 def test_sales_data(test_db):
     # Criar produtos
     product = Product(name="Test Product", price=100.00, stock=10)
     test_db.add(product)
     
-    # Criar pedido pago
+    # Criar pedido pago com data atual
+    current_time = datetime.now()
     order = Order(
         user_id=1,
         status=OrderStatus.paid,
         total=200.00,
-        created_at=datetime.now()
+        created_at=current_time
     )
     order_item = OrderItem(
-        product_id=product.id,
+        product_id=1,
         quantity=2,
         price=100.00
     )
     order.items.append(order_item)
     test_db.add(order)
     test_db.commit()
-    return {"product": product, "order": order}
+    return {"product": product, "order": order, "created_at": current_time}
 
 def test_generate_sales_report(client, admin_token, test_sales_data):
+    start_date = test_sales_data["created_at"] - timedelta(hours=1)
+    end_date = test_sales_data["created_at"] + timedelta(hours=1)
+    
     response = client.post(
         "/reports/",
         headers={"Authorization": f"Bearer {admin_token}"},
         json={
             "type": "sales",
             "period": "daily",
-            "start_date": datetime.now().isoformat(),
-            "end_date": (datetime.now() + timedelta(days=1)).isoformat()
+            "start_date": start_date.isoformat(),
+            "end_date": end_date.isoformat()
         }
     )
     assert response.status_code == status.HTTP_200_OK

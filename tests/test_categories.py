@@ -108,3 +108,22 @@ def test_update_nonexistent_category(client, admin_token):
         json={"name": "Nova"}
     )
     assert response.status_code == status.HTTP_404_NOT_FOUND
+
+def test_create_category_duplicate_name(client, admin_token, test_category):
+    response = client.post(
+        "/categories/",
+        headers={"Authorization": f"Bearer {admin_token}"},
+        json={
+            "name": test_category.name,
+            "description": "Duplicada"
+        }
+    )
+    assert response.status_code == status.HTTP_400_BAD_REQUEST
+
+def test_update_category_not_found(client, admin_token):
+    response = client.patch(
+        "/categories/999",
+        headers={"Authorization": f"Bearer {admin_token}"},
+        json={"name": "Nova"}
+    )
+    assert response.status_code == status.HTTP_404_NOT_FOUND
